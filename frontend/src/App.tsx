@@ -88,7 +88,12 @@ function App() {
                 setError(data.detail || 'Calculation failed');
             }
         } catch (err) {
-            setError('Connection to backend failed');
+            console.error("Simulation error:", err);
+            if (err instanceof SyntaxError) {
+                setError('Backend returned invalid JSON (check console for details)');
+            } else {
+                setError('Connection to backend failed (is the server running?)');
+            }
         } finally {
             setLoading(false);
         }

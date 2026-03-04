@@ -1,7 +1,3 @@
-# Productivity Index Calculator
-
-A full-stack application for calculating daily productivity using fuzzy logic.
-
 ## Prerequisites
 
 - [Python 3.8+](https://www.python.org/downloads/)

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, Clock, Moon, Layers, AlertCircle, Cpu } from "lucide-react";
+import { Activity, Clock, Moon, Layers, AlertCircle, Cpu, Building2, Brain, GraduationCap, BarChart3, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 
 import { MembershipGraph } from "./components/MembershipGraph";
 import { RuleLog } from "./components/RuleLog";
@@ -60,6 +60,8 @@ function App() {
     sleep_quality_score: 7,
     workload: 5,
   });
+
+  const [showApps, setShowApps] = useState(true);
 
   const [result, setResult] = useState<DPIResult | null>(null);
   const [metadata, setMetadata] = useState<FuzzyMetadata | null>(null);
@@ -160,6 +162,70 @@ function App() {
         </div>
       </header>
 
+      {/* APPLICATIONS SECTION */}
+
+      <div className="glass-card apps-section">
+        <div
+          className="apps-header"
+          onClick={() => setShowApps(!showApps)}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="apps-header-left">
+            <Lightbulb size={20} className="text-amber-400" />
+            <h2>What Can You Do With This Tool?</h2>
+          </div>
+          {showApps ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </div>
+
+        {showApps && (
+          <div className="apps-grid">
+            <div className="app-card">
+              <div className="app-icon app-icon-blue">
+                <Building2 size={22} />
+              </div>
+              <h3>Corporate & HR</h3>
+              <p>
+                Monitor employee wellness, prevent burnout, and balance workloads
+                across teams using data-driven productivity insights.
+              </p>
+            </div>
+
+            <div className="app-card">
+              <div className="app-icon app-icon-purple">
+                <BarChart3 size={22} />
+              </div>
+              <h3>Remote Work Analytics</h3>
+              <p>
+                Track distributed team performance non-invasively through
+                self-reported daily metrics like focus, sleep, and distractions.
+              </p>
+            </div>
+
+            <div className="app-card">
+              <div className="app-icon app-icon-green">
+                <Brain size={22} />
+              </div>
+              <h3>Personal Productivity</h3>
+              <p>
+                Use it as an AI-powered daily journal — log your habits and get a
+                fuzzy-logic score with actionable recommendations.
+              </p>
+            </div>
+
+            <div className="app-card">
+              <div className="app-icon app-icon-amber">
+                <GraduationCap size={22} />
+              </div>
+              <h3>Education & Research</h3>
+              <p>
+                A perfect academic showcase for fuzzy logic, Mamdani inference,
+                and soft computing in real-world decision systems.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* INPUT PANEL */}
 
       <div className="glass-card">
@@ -173,9 +239,10 @@ function App() {
               <span
                 title="Total uninterrupted deep work time during the day."
                 style={{ cursor: "help" }}>
-                <Clock size={16} /> Focus Time
+                <Clock size={16} /> Focus Time (hours)
               </span>
             </label>
+            <p className="input-helper">How many hours did you spend on deep, uninterrupted work today? (0–24 hrs)</p>
 
             <input
               type="number"
@@ -183,6 +250,7 @@ function App() {
               min="0"
               max="24"
               step="0.5"
+              placeholder="e.g. 4.5"
               onChange={(e) =>
                 setFormData({
                   ...formData,
@@ -197,14 +265,16 @@ function App() {
               <span
                 title="Interruptions such as notifications or meetings."
                 style={{ cursor: "help" }}>
-                <AlertCircle size={16} /> Distractions
+                <AlertCircle size={16} /> Distractions (count)
               </span>
             </label>
+            <p className="input-helper">Number of interruptions today — phone calls, notifications, meetings, etc.</p>
 
             <input
               type="number"
               value={formData.distractions}
               min="0"
+              placeholder="e.g. 5"
               onChange={(e) =>
                 setFormData({
                   ...formData,
@@ -219,9 +289,10 @@ function App() {
               <span
                 title="Total hours of sleep before the workday."
                 style={{ cursor: "help" }}>
-                <Moon size={16} /> Sleep Hours
+                <Moon size={16} /> Sleep Duration (hours)
               </span>
             </label>
+            <p className="input-helper">How many hours did you sleep last night? 7–8 hrs is considered ideal.</p>
 
             <input
               type="number"
@@ -229,6 +300,7 @@ function App() {
               step="0.5"
               min="0"
               max="24"
+              placeholder="e.g. 7"
               onChange={(e) =>
                 setFormData({
                   ...formData,
@@ -239,7 +311,8 @@ function App() {
           </div>
 
           <div>
-            <label>Sleep Quality ({formData.sleep_quality_score}/10)</label>
+            <label><Moon size={16} /> Sleep Quality ({formData.sleep_quality_score}/10)</label>
+            <p className="input-helper">Rate how restful your sleep was — 1 = very poor, 10 = perfectly refreshed.</p>
 
             <input
               type="range"
@@ -257,8 +330,9 @@ function App() {
 
           <div>
             <label>
-              <Layers size={16} /> Workload ({formData.workload}/10)
+              <Layers size={16} /> Workload Intensity ({formData.workload}/10)
             </label>
+            <p className="input-helper">How heavy was your task load? 1–3 = light, 4–7 = balanced, 8–10 = overloaded.</p>
 
             <input
               type="range"

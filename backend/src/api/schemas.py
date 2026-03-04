@@ -46,3 +46,47 @@ class FuzzyMetadataResponse(BaseModel):
     input_variables: Dict[str, VariableInfo]
     output_variables: Dict[str, VariableInfo]
     rules: List[RuleInfo]
+
+class BatchInputData(BaseModel):
+    scenarios: List[DailyInputData]
+
+class BatchDPIResponse(BaseModel):
+    status: str
+    results: List[ProductivityResultResponse]
+
+class SweepRequest(BaseModel):
+    base_scenario: DailyInputData
+    target_variable: str = Field(..., description="E.g., FocusTime, Distractions")
+    start_val: float
+    end_val: float
+    steps: int = Field(10, ge=2, le=100)
+
+class SweepPoint(BaseModel):
+    value: float
+    dpi_score: float
+
+class SweepResponse(BaseModel):
+    status: str
+    variable: str
+    data: List[SweepPoint]
+
+class SurfaceRequest(BaseModel):
+    base_scenario: DailyInputData
+    x_variable: str
+    y_variable: str
+    x_start: float
+    x_end: float
+    y_start: float
+    y_end: float
+    steps: int = Field(10, ge=2, le=50)
+
+class SurfacePoint(BaseModel):
+    x: float
+    y: float
+    dpi_score: float
+
+class SurfaceResponse(BaseModel):
+    status: str
+    x_variable: str
+    y_variable: str
+    data: List[SurfacePoint]

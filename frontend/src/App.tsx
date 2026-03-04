@@ -7,6 +7,8 @@ import { ProductivityGauge } from "./components/ProductivityGauge";
 import { ProductivityPie } from "./components/ProductivityPie";
 import { InsightsPanel } from "./components/InsightsPanel";
 import { RecommendationPanel } from "./components/RecommendationPanel";
+import { WhatIfSimulator } from "./components/WhatIfSimulator";
+import { SensitivityPlot } from "./components/SensitivityPlot";
 
 interface DPIData {
   focus_time: number;
@@ -75,8 +77,7 @@ function App() {
       .catch((err) => console.error("Metadata error", err));
   }, []);
 
-  const handleCalculate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const calculateDPI = async (data: DPIData) => {
     setLoading(true);
     setError(null);
 
@@ -84,15 +85,15 @@ function App() {
       const response = await fetch("/api/calculate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
       });
 
-      const data = await response.json();
+      const resData = await response.json();
 
-      if (data.status === "success") {
-        setResult(data.data);
+      if (resData.status === "success") {
+        setResult(resData.data);
       } else {
-        setError(data.detail || "Calculation failed");
+        setError(resData.detail || "Calculation failed");
       }
     } catch (err) {
       console.error(err);
@@ -101,6 +102,13 @@ function App() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      calculateDPI(formData);
+    }, 300); // 300ms debounce
+    return () => clearTimeout(timeoutId);
+  }, [formData]);
 
   const generateInsights = () => {
     const insights: string[] = [];
@@ -229,11 +237,14 @@ function App() {
       {/* INPUT PANEL */}
 
       <div className="glass-card">
-        <h2>
-          <Activity size={20} /> Input Parameters
-        </h2>
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="flex flex-row items-center m-0 gap-2">
+            <Activity size={20} /> Input Parameters
+          </h2>
+          {loading && <span className="animate-spin border-2 border-indigo-500 border-t-transparent rounded-full w-4 h-4 ml-2"></span>}
+        </div>
 
-        <form onSubmit={handleCalculate} className="input-grid">
+        <div className="input-grid">
           <div>
             <label>
               <span
@@ -254,7 +265,7 @@ function App() {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  focus_time: parseFloat(e.target.value),
+                  focus_time: parseFloat(e.target.value) || 0,
                 })
               }
             />
@@ -278,7 +289,7 @@ function App() {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  distractions: parseInt(e.target.value),
+                  distractions: parseInt(e.target.value) || 0,
                 })
               }
             />
@@ -304,7 +315,7 @@ function App() {
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  sleep_hours: parseFloat(e.target.value),
+                  sleep_hours: parseFloat(e.target.value) || 0,
                 })
               }
             />
@@ -347,20 +358,7 @@ function App() {
               }
             />
           </div>
-
-          <button
-            className="btn-primary flex items-center justify-center gap-2"
-            disabled={loading}>
-            {loading ? (
-              <>
-                <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-                Running AI Engine...
-              </>
-            ) : (
-              "Analyze Productivity"
-            )}
-          </button>
-        </form>
+        </div>
 
         {error && <p className="text-red-500 mt-3">{error}</p>}
       </div>
@@ -390,7 +388,7 @@ function App() {
             <RecommendationPanel recommendations={generateRecommendations()} />
           </div>
 
-          <div className="glass-card">
+          <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
             <div className="flex items-center gap-2 mb-4">
               <Cpu size={20} className="text-indigo-400" />
               <h2 className="text-lg font-semibold">
@@ -418,8 +416,19 @@ function App() {
             </div>
           </div>
 
-          <div className="glass-card">
+          <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
             <RuleLog rules={result.simulation.fired_rules} />
+          </div>
+
+          <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
+            <WhatIfSimulator
+              currentData={formData}
+              onApply={(newData) => setFormData(newData)}
+            />
+          </div>
+
+          <div className="glass-card" style={{ gridColumn: '1 / -1' }}>
+            <SensitivityPlot baseData={formData} currentScore={result.dpi_score} />
           </div>
         </div>
       )}
